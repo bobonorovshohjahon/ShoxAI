@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Shax AI</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0b0d12;color:#f5f7fb;font-family:Arial,sans-serif;height:100vh}
+.app{height:100vh;display:flex;overflow:hidden}.side{width:250px;background:#11141b;border-right:1px solid #272d39;padding:16px;display:flex;flex-direction:column}
+.logo{font-size:22px;font-weight:800;margin:6px 8px 22px}.logo span{color:#7c5cff}
+button{font-family:inherit}.new{background:#202632;color:#fff;border:1px solid #343b49;border-radius:10px;padding:12px;text-align:left;cursor:pointer}.new:hover{background:#2a3140}
+.info{margin-top:auto;color:#788195;font-size:11px;line-height:1.5}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}.top{height:60px;border-bottom:1px solid #272d39;display:flex;align-items:center;padding:0 20px;font-weight:700}
+.status{margin-left:auto;color:#7f8ba1;font-size:12px}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#32c48d;margin-right:6px}
+.chat{flex:1;overflow:auto;padding:35px 18px 130px}.welcome{max-width:760px;margin:12vh auto;text-align:center}.welcome h1{font-size:42px;margin:0 0 12px}.welcome h1 span{color:#7c5cff}.welcome p{color:#929bad}
+.messages{max-width:850px;margin:auto}.msg{display:flex;gap:12px;margin:24px 0}.avatar{width:34px;height:34px;border-radius:10px;background:#7c5cff;display:grid;place-items:center;flex:none;font-size:12px;font-weight:bold}.user .avatar{background:#303746}.bubble{max-width:calc(100% - 48px);line-height:1.7;white-space:pre-wrap}
+.composer{position:absolute;left:250px;right:0;bottom:0;padding:18px;background:linear-gradient(transparent,#0b0d12 35%)}.box{max-width:850px;margin:auto;background:#171b24;border:1px solid #343b49;border-radius:16px;padding:9px;display:flex;gap:8px;align-items:end}
+textarea{flex:1;background:transparent;border:0;outline:0;color:#fff;resize:none;padding:10px;min-height:44px;max-height:150px;font:15px Arial}.send{width:44px;height:44px;border:0;border-radius:12px;background:#7c5cff;color:white;font-size:18px;cursor:pointer}.send:disabled{opacity:.5}
+.note{text-align:center;color:#687184;font-size:10px;margin-top:8px}
+@media(max-width:700px){.side{display:none}.composer{left:0}.welcome h1{font-size:30px}.chat{padding-left:12px;padding-right:12px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+<div class="logo">Shax <span>AI</span></div>
+<button class="new" onclick="newChat()">＋ Yangi chat</button>
+<div class="info">Bu versiya AI modelini brauzerning o‘zida ishlatadi. Birinchi ishga tushishda model yuklanadi.</div>
+</aside>
+<main class="main">
+<header class="top">Shax AI <span class="status" id="status"><span class="dot"></span>Tayyorlanmoqda</span></header>
+<section class="chat" id="chat">
+<div class="welcome" id="welcome"><h1>Salom, men <span>Shax AI</span></h1><p>Savolingizni yozing. Birinchi marta model yuklanishi biroz vaqt olishi mumkin.</p></div>
+<div class="messages" id="messages"></div>
+</section>
+<div class="composer">
+<div class="box"><textarea id="input" rows="1" placeholder="Xabar yozing..." disabled></textarea><button class="send" id="send" onclick="send()" disabled>↑</button></div>
+<div class="note">AI javoblari qurilmangizda qayta ishlanadi. Internet modelni birinchi marta yuklash uchun kerak.</div>
+</div>
+</main>
+</div>
+
+<script type="module">
+import { pipeline, env } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1";
+env.allowLocalModels = false;
+
+const input=document.getElementById("input"), sendBtn=document.getElementById("send");
+const status=document.getElementById("status"), messages=document.getElementById("messages"), welcome=document.getElementById("welcome");
+let generator=null, history=[];
+
+function add(text,who){
+ welcome.style.display="none";
+ const row=document.createElement("div"); row.className="msg "+who;
+ const av=document.createElement("div"); av.className="avatar"; av.textContent=who==="user"?"S":"AI";
+ const b=document.createElement("div"); b.className="bubble"; b.textContent=text;
+ row.append(av,b); messages.appendChild(row); document.getElementById("chat").scrollTop=999999;
+}
+
+async function init(){
+ try{
+  status.innerHTML='<span class="dot"></span>AI yuklanmoqda...';
+  generator=await pipeline("text-generation","onnx-community/Qwen2.5-0.5B-Instruct-ONNX",{dtype:"q4f16"});
+  status.innerHTML='<span class="dot"></span>Onlayn';
+  input.disabled=false; sendBtn.disabled=false; input.focus();
+ }catch(e){
+  status.textContent="Model yuklanmadi";
+  add("AI modelini yuklashda xatolik yuz berdi. Internet aloqasini tekshiring va sahifani qayta oching.","ai");
+ }
+}
+
+async function send(){
+ const text=input.value.trim(); if(!text||!generator)return;
+ input.value=""; input.disabled=true; sendBtn.disabled=true; add(text,"user");
+ history.push({role:"user",content:text});
+ try{
+  const messagesForModel=[
+   {role:"system",content:"You are Shax AI, a helpful assistant. Answer naturally and clearly. If the user writes Uzbek, answer in Uzbek."},
+   ...history.slice(-8)
+  ];
+  const out=await generator(messagesForModel,{max_new_tokens:300,temperature:.7,do_sample:true});
+  let answer=out[0]?.generated_text?.at(-1)?.content || "Javob olinmadi.";
+  add(answer,"ai"); history.push({role:"assistant",content:answer});
+ }catch(e){add("Javob yaratishda xatolik yuz berdi. Qayta urinib ko‘ring.","ai");}
+ input.disabled=false; sendBtn.disabled=false; input.focus();
+}
+function newChat(){messages.innerHTML="";welcome.style.display="block";history=[];}
+window.send=send; window.newChat=newChat;
+input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}});
+init();
+</script>
+</body>
+</html>
