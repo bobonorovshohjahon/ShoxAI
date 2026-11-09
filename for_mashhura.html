@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#3b102d">
+<title>For Mashhura ❤️</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; overflow-x: hidden;
+    display: grid; place-items: center; padding: 22px;
+    color: #fff7fb; font-family: Georgia, "Times New Roman", serif;
+    background: radial-gradient(circle at 50% 15%, #85365e 0, #481832 42%, #170b1c 100%);
+  }
+  .glow { position: fixed; width: 280px; height: 280px; border-radius: 50%;
+    background: #ff70ad; filter: blur(110px); opacity: .18; pointer-events: none; }
+  .glow.one { top: -100px; left: -80px; }
+  .glow.two { right: -100px; bottom: -100px; background: #ff315f; }
+  .card {
+    position: relative; z-index: 2; width: min(100%, 470px); padding: 34px 25px;
+    text-align: center; border: 1px solid rgba(255,190,220,.38);
+    border-radius: 28px; background: rgba(255,255,255,.09);
+    box-shadow: 0 18px 70px rgba(0,0,0,.35); backdrop-filter: blur(14px);
+  }
+  .heart { font-size: 70px; line-height: 1.2; animation: beat 1.2s infinite; }
+  @keyframes beat { 0%,100% { transform: scale(1); } 50% { transform: scale(1.14); } }
+  h1 { margin: 12px 0; color: #ffc2dc; font-size: clamp(30px, 8vw, 42px); }
+  h2 { color: #ffd3e6; font-size: 23px; }
+  p { line-height: 1.75; color: #ffeaf3; }
+  input {
+    width: 100%; margin: 14px 0 10px; padding: 15px;
+    border: 1px solid #ffb6d4; border-radius: 13px; outline: none;
+    background: rgba(30,8,25,.55); color: white; text-align: center;
+    font-size: 18px; letter-spacing: 2px;
+  }
+  input::placeholder { color: #eac0d3; letter-spacing: 0; }
+  button {
+    border: 0; border-radius: 30px; padding: 13px 23px; margin: 8px 4px;
+    background: linear-gradient(135deg,#ff78b5,#e83d82); color: white;
+    font-size: 16px; cursor: pointer; box-shadow: 0 7px 22px #e83d8240;
+    transition: transform .2s, filter .2s;
+  }
+  button:hover { transform: translateY(-2px); filter: brightness(1.08); }
+  #mainPage { display: none; }
+  #error { min-height: 22px; color: #ffd0df; font-size: 14px; }
+  #letter {
+    display: none; margin: 22px 0 8px; padding: 20px;
+    border-radius: 18px; background: rgba(255,210,230,.12);
+    border: 1px solid rgba(255,190,220,.25); line-height: 1.9;
+    animation: reveal .6s ease;
+  }
+  @keyframes reveal { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .small { font: 12px Arial,sans-serif; color: #e9bfd2; margin-top: 22px; }
+  .float-heart {
+    position: fixed; bottom: -35px; z-index: 1; pointer-events: none;
+    animation: rise linear forwards; opacity: .9;
+  }
+  @keyframes rise { to { transform: translateY(-115vh) rotate(360deg); opacity: 0; } }
+  @media (max-width: 380px) { .card { padding: 27px 18px; } }
+</style>
+</head>
+<body>
+<div class="glow one"></div><div class="glow two"></div>
+
+<main class="card" id="loginPage">
+  <div class="heart">🔐</div>
+  <h1>For Mashhura</h1>
+  <p>Bu sirli dunyoga kirish uchun maxsus kodni kiriting, asalim 💗</p>
+  <form id="loginForm">
+    <input id="password" type="password" placeholder="Maxfiy kod" autocomplete="off" aria-label="Maxfiy kod">
+    <button type="submit">Kirish ❤️</button>
+  </form>
+  <div id="error" aria-live="polite"></div>
+  <div class="small">ONLY FOR MASHHURA 💋</div>
+</main>
+
+<main class="card" id="mainPage">
+  <div class="heart">💖</div>
+  <h1>Mashhura ❤️</h1>
+  <h2>Bu senga, asalim 💕</h2>
+  <p>Hayotimda borliging uchun rahmat. Sen mening kunlarimga quvonch va tabassum olib kiradigan insonsan. 🌹</p>
+  <h2>Yes yes, I love you! 💋</h2>
+  <button id="letterButton" type="button">💌 Sevgi maktubini och</button>
+  <section id="letter">
+    <h2>Sevgilim Mashhura ❤️</h2>
+    <p>Bu kichkina sayt faqat sen uchun. Har bir yurakcha senga bo‘lgan mehrimni eslatib tursin. Doimo kulib yur, asalim. Sen juda qadrlisan. Seni yaxshi ko‘raman! 💗</p>
+    <div style="font-size:32px">🌹 💗 🌹</div>
+  </section>
+  <button id="musicButton" type="button">🎵 Musiqani yoqish</button>
+  <p class="small">MADE WITH ❤️ JUST FOR YOU</p>
+</main>
+
+<!-- O'zingiz yoqtirgan MP3 faylni shu HTML bilan bir papkaga song.mp3 nomi bilan joylang. -->
+<audio id="music" loop preload="none">
+  <source src="song.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+  const loginForm = document.getElementById('loginForm');
+  const passwordInput = document.getElementById('password');
+  const error = document.getElementById('error');
+  const loginPage = document.getElementById('loginPage');
+  const mainPage = document.getElementById('mainPage');
+  const letter = document.getElementById('letter');
+  const music = document.getElementById('music');
+  const musicButton = document.getElementById('musicButton');
+
+  loginForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (passwordInput.value === '2012.05.04') {
+      loginPage.style.display = 'none';
+      mainPage.style.display = 'block';
+      startHearts();
+    } else {
+      error.textContent = 'Kod noto‘g‘ri. Yana bir bor urinib ko‘ring ❤️';
+      passwordInput.select();
+    }
+  });
+
+  document.getElementById('letterButton').addEventListener('click', () => {
+    letter.style.display = letter.style.display === 'block' ? 'none' : 'block';
+  });
+
+  musicButton.addEventListener('click', async () => {
+    if (music.paused) {
+      try {
+        await music.play();
+        musicButton.textContent = '⏸ Musiqani to‘xtatish';
+      } catch {
+        alert('Musiqa topilmadi. HTML fayl yoniga song.mp3 nomli MP3 fayl qo‘ying.');
+      }
+    } else {
+      music.pause();
+      musicButton.textContent = '🎵 Musiqani yoqish';
+    }
+  });
+
+  let heartsStarted = false;
+  function startHearts() {
+    if (heartsStarted) return;
+    heartsStarted = true;
+    const symbols = ['❤️', '💗', '💕', '💖', '🌹'];
+    setInterval(() => {
+      const heart = document.createElement('span');
+      heart.className = 'float-heart';
+      heart.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+      heart.style.left = Math.random() * 100 + 'vw';
+      heart.style.fontSize = (17 + Math.random() * 22) + 'px';
+      heart.style.animationDuration = (5 + Math.random() * 4) + 's';
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 9500);
+    }, 450);
+  }
+</script>
+</body>
+</html>
